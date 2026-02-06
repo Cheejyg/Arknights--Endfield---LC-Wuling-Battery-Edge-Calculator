@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LC Wuling Battery Edge Calculator</title>
+    <style>
+        body {
+            font-family: "Nuber Next", "Noto Sans SC", "Microsoft YaHei", Arial, sans-serif;
+            font-size: 16px;
+            padding: 8px;
+        }
+        .row {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        input[type="number"] {
+            padding: 8px;
+            width: 128px;
+        }
+        .error {
+            color: red;
+        }
+        .output {
+            position: relative;
+            width: 1600px;
+            height: 966px;
+        }
+        .output img.blueprint {
+            position: absolute;
+            width: 1600px;
+            height: 966px;
+        }
+        .overlay {
+            position: absolute;
+            top: 194px;
+            left: 233px;
+            display: flex;
+            gap: 0;
+        }
+        .overlay img {
+            display: inline-block;
+            width: 59px;
+            height: 59px;
+            margin-right: 1px;
+        }
+    </style>
+</head>
+<body>
+    <h1>LC Wuling Battery Edge Calculator</h1>
+    <div class="row">
+        <input type="number" id="powerUse" value="0" min="0" max="4095" oninput="calculate()" /> <span class="label">Power Use</span>
+        <span id="error" class="error"></span>
+    </div>
+    <div>
+        <label>
+            <input type="checkbox" id="topView" onchange="calculate()" />
+            Enter Top View 3D
+        </label>
+    </div>
+    <div class="output">
+        <img src="images/blueprint.png" class="view" id="view" alt="View" />
+        <div class="overlay" id="overlay"></div>
+    </div>
+    <script type="text/javascript">
+        const MAX_BITS = 12;
+        const MAX_DECIMAL = (1 << MAX_BITS) - 1;
+        
+        function calculate() {
+            const powerUse = document.getElementById("powerUse").value;
+            const checked = document.getElementById("topView").checked;
+            const error = document.getElementById("error");
+            const overlay = document.getElementById("overlay");
+            const view = document.getElementById("view");
+            
+            const converger = checked ? "images/converger3d.png" : "images/converger2d.png";
+            const beltBridge = checked ? "images/beltBridge3d.png" : "images/beltBridge2d.png";
+            
+            error.textContent = "";
+            view.src = checked ? "images/3d.png" : "images/2d.png";
+            
+            let binary;
+            if (powerUse === "") {
+                binary = "0".repeat(MAX_BITS);
+            } else {
+                const decimal = Number(powerUse);
+                if (decimal < 0) {
+                    binary = "0".repeat(MAX_BITS);
+                } else if (decimal > MAX_DECIMAL) {
+                    error.textContent = "too high!";
+                    binary = "1".repeat(MAX_BITS);
+                } else {
+                    binary = Math.ceil(powerUse).toString(2).padStart(MAX_BITS, "0");
+                }  
+            }
+            
+            overlay.innerHTML = "";
+            for (let i = 0; i < binary.length; i++) {
+                const img = document.createElement("img");
+                img.src = binary[i] === "0" ? converger : beltBridge;
+                img.alt = binary[i];
+                overlay.appendChild(img);
+            }
+        }
+        
+        calculate();
+    </script>
+</body>
+</html>
